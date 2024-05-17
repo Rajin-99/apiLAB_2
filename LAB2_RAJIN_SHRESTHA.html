@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RJlab_2</title>
+   
+</head>
+<body>
+    <style>
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        background-color: #0095c3;
+        color: white;
+        border: none;
+        border-radius: 5px;
+    }
+    
+    button:hover {
+        background-color: #45a049;
+    }
+    
+    label {
+        font-size: 16px;
+        margin-right: 10px;
+    }
+    
+    input[type="number"] {
+        width: 50px;
+        padding: 5px;
+        font-size: 16px;
+    }
+    
+    select {
+        padding: 5px;
+        font-size: 16px;
+    }
+    
+    .results {
+        margin-top: 20px;
+        font-size: 16px;
+    }
+    </style>
+
+    <h1>Overall Health check list for CATS </h1>
+            <button onclick="allName()">All Names</button>
+            <br><br>
+            <label for="healthIssue">Health Issues:</label>
+            <input type="number" id="healthIssue" min="1">
+            <button onclick="filterHealthIssue()">Filter</button>
+            <br><br>
+            <label for="weightUnit">Weight:</label>
+            <select id="weightUnit">
+                <option value="imperial">Imperial</option>
+                <option value="metric">Metric</option>
+            </select>
+            <br><br>
+            <button onclick="Weights()">Display Weights</button>
+            <br><br>
+            <button onclick="IntelligenceFriendly()">Intelligence - Friendly</button> 
+            <br><br>
+            <button onclick="averageIntelligence()">Average Intelligence</button>
+            <br><br>
+            <button onclick="averageIntelligenceChildFriendly()">Average Intelligence for Child Friendly</button>
+        <div id="res" class="results"></div>
+        <div id="weightsRes" class="results"></div>
+        <div id="intelligenceFriendlyRes" class="results"></div>
+        <div id="avgIntelligenceRes" class="results"></div>
+        <div id="avgIntelligenceChildFriendlyRes" class="results"></div>
+    
+
+    <script>
+        function allName() {
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            const jsonContentElement = document.getElementById('res');
+            jsonContentElement.innerHTML = "";
+            let names = [];
+            const totalNames = document.createElement('div');
+            totalNames.textContent = `Total Names: ${names.length}`;
+            jsonContentElement.appendChild(totalNames);
+
+         fetch(jsonUrl)
+           .then(response => {
+             if (!response.ok) {
+                  throw new Error('Something went wrong.');
+             }
+             return response.json();
+          })
+        .then(data => {
+             data.forEach(value => {
+                names.push(value.name);
+                const lineBreak = document.createElement('br');
+                jsonContentElement.appendChild(document.createTextNode(value.name));
+                jsonContentElement.appendChild(lineBreak);
+            });
+            
+            totalNames.textContent = `Total Names: ${names.length}`;
+        })
+        .catch(error => {
+            console.error('Error fetching JSON:', error);
+        });
+}
+
+function filterHealthIssue() {
+    const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+    const jsonContentElement = document.getElementById('res');
+    const healthIssueInput = document.getElementById('healthIssue');
+    const healthIssueNumber = parseInt(healthIssueInput.value);
+    jsonContentElement.innerHTML = "";
+    fetch(jsonUrl)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Something went wrong.');
+            }
+            return response.json();
+        })
+        .then(data => {
+          
+            const breedsWithIssues = data.filter(breed => breed.health_issues === healthIssueNumber);
+            
+          
+            const label = document.createElement('div');
+            label.textContent = `Breeds with Health Issue # ${healthIssueNumber}:`;
+            jsonContentElement.appendChild(label);
+
+           
+            breedsWithIssues.forEach(breed => {
+                const lineBreak = document.createElement('br');
+                jsonContentElement.appendChild(document.createTextNode(breed.name));
+                jsonContentElement.appendChild(lineBreak);
+            });
+
+        
+            const totalBreedsWithIssues = document.createElement('div');
+            totalBreedsWithIssues.textContent = `Total: ${breedsWithIssues.length}`;
+            jsonContentElement.appendChild(totalBreedsWithIssues);
+        })
+        .catch(error => {
+            console.error('Error fetching JSON:', error);
+        });
+}
+        function Weights() {
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            const jsonContentElement = document.getElementById('res');
+            const weightUnitSelect = document.getElementById('weightUnit');
+            const selectedUnit = weightUnitSelect.value;
+            jsonContentElement.innerHTML = "";
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(value => {
+                        let weight;
+                        if (selectedUnit === 'imperial') {
+                            weight = value.weight.imperial;
+                        } else {
+                            weight = value.weight.metric;
+                        }
+                        const lineBreak = document.createElement('br');
+                        jsonContentElement.appendChild(document.createTextNode(`${value.name}: ${weight} ${selectedUnit}`));
+                        jsonContentElement.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+
+        function IntelligenceFriendly() {
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            const jsonContentElement = document.getElementById('intelligenceFriendlyRes');
+            jsonContentElement.innerHTML = "";
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    data.forEach(breed => {
+                        const lineBreak = document.createElement('br');
+                        jsonContentElement.appendChild(document.createTextNode(`I: ${breed.intelligence} - F: ${breed.child_friendly}`));
+                        jsonContentElement.appendChild(lineBreak);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+
+        function averageIntelligence() {
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            const jsonContentElement = document.getElementById('avgIntelligenceRes');
+            jsonContentElement.innerHTML = "";
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let totalIntelligence = 0;
+                    let totalBreeds = data.length;
+                    data.forEach(breed => {
+                        totalIntelligence += breed.intelligence;
+                    });
+                    const avgIntelligence = (totalIntelligence / totalBreeds).toFixed(2);
+                    jsonContentElement.textContent = `Average Intelligence: ${avgIntelligence}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+
+        function averageIntelligenceChildFriendly() {
+            const jsonUrl = 'https://api.thecatapi.com/v1/breeds';
+            const jsonContentElement = document.getElementById('avgIntelligenceChildFriendlyRes');
+            jsonContentElement.innerHTML = "";
+            fetch(jsonUrl)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Something went wrong.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    let totalIntelligence = 0;
+                    let totalBreeds = 0;
+                    data.forEach(breed => {
+                        if (breed.child_friendly >= 4) { 
+                            totalIntelligence += breed.intelligence;
+                            totalBreeds++;
+                        }
+                    });
+                    const avgIntelligence = (totalBreeds > 0) ? (totalIntelligence / totalBreeds).toFixed(2) : "N/A";
+                    jsonContentElement.textContent = `Average Intelligence for Child Friendly: ${avgIntelligence}`;
+                })
+                .catch(error => {
+                    console.error('Error fetching JSON:', error);
+                });
+        }
+    </script>
+</body>
+</html>
